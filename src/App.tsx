@@ -7,16 +7,16 @@ import {
   configured, start, deviceState, route, run, explainPrompt, askPrompt, LANG_NATIVE,
   type DeviceState, type Explanation, type Receipt,
 } from './lib/ai';
-import { IconStop, IconCaution, IconCheck, IconInfo, IconChip, IconCloud, IconLock, IconMark, IconOffline, IconSparkle, IconShield, IconReceipt, IconDoc, IconArrow, IconTick, IconGithub } from './icons';
+import { IconStop, IconCaution, IconCheck, IconInfo, IconChip, IconCloud, IconLock, IconMark, IconOffline, IconTick } from './icons';
 
 const REPO = 'https://github.com/malikdevhunk/readback';
 const LEVEL = {
-  danger: { Icon: IconStop, step: 3 },
-  caution: { Icon: IconCaution, step: 2 },
-  routine: { Icon: IconCheck, step: 1 },
+  danger: { Icon: IconStop },
+  caution: { Icon: IconCaution },
+  routine: { Icon: IconCheck },
 } as const;
 
-// The rules engine is deterministic, so each sample's verdict can be shown on its card before it is opened.
+// The rules engine is deterministic, so each sample's verdict can be shown before it is opened.
 const SAMPLE_LEVEL: Record<string, Readback['level']> = Object.fromEntries(
   SAMPLES.map((s) => { try { return [s.id, decode(s.body(), { site: s.site }).level]; } catch { return [s.id, 'caution']; } }),
 );
@@ -125,43 +125,33 @@ export default function App() {
 
   return (
     <div className="shell">
-      <div className="aurora" aria-hidden="true"><i /><i /><i /></div>
       <a className="skip" href="#h1">Skip to the tool</a>
       <header className="top">
-        <a className="brand" href="./" aria-label="Readback home"><IconMark size={34} /><span>Readback</span></a>
+        <a className="brand" href="./" aria-label="Readback home"><IconMark size={28} /><span>Readback</span></a>
         <DeviceStatus device={device} online={online} />
       </header>
 
-      <main className={`grid${rb ? ' has-result' : ''}`}>
+      <main className="grid">
         <section className="intake" aria-labelledby="h1">
-          <p className="eyebrow"><IconShield size={16} /> Wallet signature decoder</p>
-          <h1 id="h1">Read it back <span className="grad">before you sign.</span></h1>
+          <h1 id="h1">Read it back before you sign.</h1>
           <p className="lead">Paste what your wallet is asking you to sign. Readback decodes it on this device and tells you, in plain words, what you would give away.</p>
-          <ul className="trust" aria-label="How it protects you">
-            <li><IconChip size={16} /> On-device first</li>
-            <li><IconCloud size={16} /> Redacted cloud fallback</li>
-            <li><IconLock size={16} /> No wallet connect</li>
-          </ul>
 
-          <form className="card editor" onSubmit={(e) => { e.preventDefault(); read(); }} noValidate>
-            <div className="editor-bar" aria-hidden="true"><i /><i /><i /><span>request.json</span></div>
-            <div className="editor-body">
-              <label htmlFor={inputId} className="label">Signature request</label>
-              <textarea
-                id={inputId} name="request" className="code" spellCheck={false} autoComplete="off" rows={11}
-                value={input} onChange={(e) => setInput(e.target.value)}
-                placeholder={'{ "primaryType": "Permit", "domain": { … }, "message": { … } }'}
-                aria-invalid={err ? true : undefined} aria-describedby={err ? 'input-error' : 'input-help'}
-              />
-              {err ? (
-                <p id="input-error" className="field-error" role="alert"><IconCaution size={16} /> <span><strong>{err.message}</strong>{err.hint ? ' ' + err.hint : ''}</span></p>
-              ) : (
-                <p id="input-help" className="help">Typed data JSON, a transaction, raw calldata, or a sign-in message. In most wallets, open the request details and copy the raw data.</p>
-              )}
-              <label htmlFor="site" className="label">Site asking you to sign <span className="optional">optional</span></label>
-              <input id="site" name="site" type="text" inputMode="url" autoComplete="off" spellCheck={false} placeholder="app.example.org" value={site} onChange={(e) => setSite(e.target.value)} />
-              <button type="submit" className="btn primary">Read it back <IconArrow size={18} /></button>
-            </div>
+          <form onSubmit={(e) => { e.preventDefault(); read(); }} noValidate>
+            <label htmlFor={inputId} className="label">Signature request</label>
+            <textarea
+              id={inputId} name="request" className="code" spellCheck={false} autoComplete="off" rows={11}
+              value={input} onChange={(e) => setInput(e.target.value)}
+              placeholder={'{ "primaryType": "Permit", "domain": { … }, "message": { … } }'}
+              aria-invalid={err ? true : undefined} aria-describedby={err ? 'input-error' : 'input-help'}
+            />
+            {err ? (
+              <p id="input-error" className="field-error" role="alert"><IconCaution size={16} /> <span><strong>{err.message}</strong>{err.hint ? ' ' + err.hint : ''}</span></p>
+            ) : (
+              <p id="input-help" className="help">Typed data JSON, a transaction, raw calldata, or a sign-in message. In most wallets, open the request details and copy the raw data.</p>
+            )}
+            <label htmlFor="site" className="label">Site asking you to sign <span className="optional">optional</span></label>
+            <input id="site" name="site" type="text" inputMode="url" autoComplete="off" spellCheck={false} placeholder="app.example.org" value={site} onChange={(e) => setSite(e.target.value)} />
+            <button type="submit" className="btn primary">Read it back</button>
           </form>
         </section>
 
@@ -172,22 +162,19 @@ export default function App() {
               question={question} setQuestion={setQuestion} onAsk={onAsk} />
           ) : <Empty />}
         </section>
-
         <section className="samples" aria-labelledby="samples-h">
           <h2 id="samples-h" className="h-small">Or open a real-shaped request</h2>
           <ul>
             {SAMPLES.map((s) => {
               const lv = SAMPLE_LEVEL[s.id] ?? 'caution';
-              const T = LEVEL[lv].Icon;
               return (
                 <li key={s.id}>
                   <button type="button" className={`sample tone-${lv}`} onClick={() => openSample(s.id)}>
-                    <span className="sample-icon" aria-hidden="true"><T size={20} /></span>
-                    <span className="sample-text">
-                      <span className="sample-title">{s.title}</span>
-                      <span className="sample-hint">{s.hint}<span className="sample-verdict"> · {strings('en').verdict[lv]}</span></span>
+                    <span className="sample-title">{s.title}</span>
+                    <span className="sample-meta">
+                      <span>{s.hint}</span>
+                      <span className="sample-verdict">{strings('en').verdict[lv]}</span>
                     </span>
-                    <IconArrow size={16} className="sample-go" />
                   </button>
                 </li>
               );
@@ -198,9 +185,11 @@ export default function App() {
       </main>
 
       <footer className="foot">
-        <p className="credit">Designed, developed and built by <a href="https://saddammalik.com" rel="noopener">Saddam Malik</a></p>
-        <p className="foot-note">Readback is a reading aid, not a guarantee. Verdicts come from fixed rules in the open-source code; the AI only explains them.</p>
-        <p className="foot-links"><a href={REPO}><IconGithub size={16} /> Source code</a><a href="./privacy.html">Privacy</a></p>
+        <div className="foot-copy">
+          <p className="credit">Designed, developed and built by <a href="https://saddammalik.com" rel="noopener">Saddam Malik</a></p>
+          <p>Readback is a reading aid, not a guarantee. Verdicts come from fixed rules in the <a href={REPO}>open-source code</a>; the AI only explains them.</p>
+        </div>
+        <p><a href="./privacy.html">Privacy</a></p>
       </footer>
     </div>
   );
@@ -226,8 +215,8 @@ function DeviceStatus({ device, online }: { device: DeviceState; online: boolean
   const s = map[device];
   return (
     <div className="status" role="status">
-      {!online && <span className="pill tone-wait"><IconOffline size={16} /> Offline</span>}
-      <span className={`pill tone-${s.tone}`}><i className="dot" aria-hidden="true" /> {s.text}</span>
+      {!online && <span className="status-item"><IconOffline size={16} /> Offline</span>}
+      <span className={`status-item tone-${s.tone}`}><IconChip size={16} /> {s.text}</span>
     </div>
   );
 }
@@ -235,16 +224,11 @@ function DeviceStatus({ device, online }: { device: DeviceState; online: boolean
 function Empty() {
   return (
     <div className="empty">
-      <p className="eyebrow muted"><IconDoc size={16} /> What you’ll see here</p>
-      <div className="preview" aria-hidden="true">
-        <span className="preview-tag">Example</span>
-        <div className="preview-verdict"><IconStop size={26} /><div><b>Do not sign</b><small>Permit2 allowance</small></div><span className="gauge g3"><i /><i /><i /></span></div>
-        <p>You let <span className="seg seg-addr">0x5a2b…646d</span> pull <span className="seg seg-danger">unlimited USDC</span> from your wallet, <span className="seg seg-caution">with no end date</span>.</p>
-      </div>
+      <h2 className="h-section">What you’ll see here</h2>
       <ol className="steps">
-        <li><span className="step-icon"><IconShield size={20} /></span><span><strong>A verdict from open rules.</strong> Do not sign, check first, or routine. Decided by code you can read, never by the AI.</span></li>
-        <li><span className="step-icon"><IconSparkle size={20} /></span><span><strong>Plain words from Gemini.</strong> Runs on this device when Chrome has Gemini Nano. If it needs the cloud, every address is removed first.</span></li>
-        <li><span className="step-icon"><IconReceipt size={20} /></span><span><strong>A privacy receipt.</strong> See where it ran, how long it took, and exactly what was sent.</span></li>
+        <li><span><strong>A verdict</strong> from fixed, open rules: do not sign, check first, or routine.</span></li>
+        <li><span><strong>One sentence</strong> that says what the signature lets someone do, with the risky part marked.</span></li>
+        <li><span><strong>A plain-words explanation</strong> from Gemini, run on this device when Chrome has Gemini Nano. If it has to use the cloud, every address is removed first.</span></li>
       </ol>
       <p className="empty-foot"><IconLock size={16} /> Readback never asks you to connect a wallet.</p>
     </div>
@@ -279,25 +263,22 @@ function Result({ rb, ai, ask, lang, setLang, allowCloud, setAllowCloud, onExpla
   const t = strings(lang);
   return (
     <article className={`result level-${rb.level}`}>
-      <div className="verdict-card">
-        <div className="verdict">
-          <span className="verdict-badge"><L.Icon size={32} /></span>
-          <div className="verdict-text">
-            <p className="verdict-label" lang={lang}>{t.verdict[rb.level]}</p>
-            <p className="kind">{rb.kind}</p>
-          </div>
-          <span className={`gauge g${L.step}`} role="img" aria-label={`${t.gauge}: ${L.step}/3`} lang={lang}><i /><i /><i /></span>
+      <div className="verdict">
+        <L.Icon size={28} />
+        <div>
+          <p className="verdict-label" lang={lang}>{t.verdict[rb.level]}</p>
+          <p className="kind">{rb.kind}</p>
         </div>
-        <Sentence parts={rb.sentence} />
       </div>
+      <Sentence parts={rb.sentence} />
 
       {rb.flags.length > 0 && (
         <ul className="flags" aria-label={t.findings} lang={lang}>
           {rb.flags.map((f, i) => {
             const S = SEV[f.severity];
             return (
-              <li key={i} className={`flag sev-${f.severity}`} style={{ ['--i' as string]: i }}>
-                <span className="flag-icon"><S.Icon size={18} /></span>
+              <li key={i} className={`flag sev-${f.severity}`}>
+                <S.Icon size={18} />
                 <div className="flag-body">
                   <p className="flag-title"><span className="sev">{t.severity[f.severity]}</span><span lang="en">{f.title}</span></p>
                   <p className="flag-detail" lang="en">{f.detail}</p>
@@ -309,14 +290,16 @@ function Result({ rb, ai, ask, lang, setLang, allowCloud, setAllowCloud, onExpla
         </ul>
       )}
 
-      <section className="explain card-inner" aria-labelledby="explain-h" lang={lang}>
+      <section className="explain" aria-labelledby="explain-h" lang={lang}>
         <div className="explain-head">
-          <h2 id="explain-h" className="h-section"><IconSparkle size={20} className="spark" /> {t.plain}</h2>
-          <label className="toggle">
-            <input type="checkbox" checked={allowCloud} onChange={(e) => setAllowCloud(e.target.checked)} name="cloud" />
-            <span className="switch" aria-hidden="true" />
-            <span>{t.cloudToggle}</span>
-          </label>
+          <h2 id="explain-h" className="h-section">{t.plain}</h2>
+          <div className="controls">
+            <label className="toggle">
+              <input type="checkbox" checked={allowCloud} onChange={(e) => setAllowCloud(e.target.checked)} name="cloud" />
+              <span className="switch" aria-hidden="true" />
+              <span>{t.cloudToggle}</span>
+            </label>
+          </div>
         </div>
         <fieldset className="langs">
           <legend className="visually-hidden">{t.language}</legend>
@@ -331,14 +314,14 @@ function Result({ rb, ai, ask, lang, setLang, allowCloud, setAllowCloud, onExpla
       </section>
 
       {ai.status === 'done' && (
-        <section className="ask card-inner" aria-labelledby="ask-h" lang={lang}>
+        <section className="ask" aria-labelledby="ask-h" lang={lang}>
           <h2 id="ask-h" className="h-small">{t.ask}</h2>
           <form onSubmit={onAsk} className="ask-row">
             <label htmlFor="q" className="visually-hidden">{t.askLabel}</label>
             <input id="q" name="q" type="text" autoComplete="off" placeholder={t.askPlaceholder} value={question} onChange={(e) => setQuestion(e.target.value)} maxLength={500} />
             <button type="submit" className="btn" disabled={ask.status === 'loading'}>{ask.status === 'loading' ? t.asking : t.askBtn}</button>
           </form>
-          {ask.status === 'done' && (<div className="answer"><p className="answer-q">{ask.q}</p><p><Hydrated text={ask.answer} rb={rb} /></p><ReceiptLine r={ask.receipt} t={t} compact /></div>)}
+          {ask.status === 'done' && (<div className="answer"><p><Hydrated text={ask.answer} rb={rb} /></p><ReceiptLine r={ask.receipt} t={t} compact /></div>)}
           {ask.status === 'error' && <p className="field-error" role="alert"><IconCaution size={16} /> {ask.message}</p>}
         </section>
       )}
@@ -369,8 +352,8 @@ function ExplainBody({ ai, rb, onExplain, t, lang }: { ai: AiState; rb: Readback
   if (ai.status === 'idle') return <button type="button" className="btn" onClick={onExplain}>{t.explainBtn}</button>;
   if (ai.status === 'loading') return (
     <div className="skeleton" aria-busy="true">
-      <p className="loading-line"><IconSparkle size={16} className="pulse" /> {ai.progress !== undefined && ai.progress < 1 ? t.downloading(Math.round(ai.progress * 100)) : t.explaining}</p>
-      <span className="bar" style={{ width: '88%' }} /><span className="bar" style={{ width: '64%' }} /><span className="bar" style={{ width: '76%' }} />
+      <p className="loading-line">{ai.progress !== undefined && ai.progress < 1 ? t.downloading(Math.round(ai.progress * 100)) : t.explaining}</p>
+      <span className="bar" style={{ width: '82%' }} /><span className="bar" style={{ width: '64%' }} /><span className="bar" style={{ width: '72%' }} />
     </div>
   );
   if (ai.status === 'error') return (
@@ -383,8 +366,8 @@ function ExplainBody({ ai, rb, onExplain, t, lang }: { ai: AiState; rb: Readback
       <ul className="ex-list">{(d.whatHappens ?? []).map((x, i) => <li key={i}><Hydrated text={x} rb={rb} /></li>)}</ul>
       {d.worstCase && (
         <div className="worst">
-          <IconCaution size={20} />
-          <p><strong>{t.worst}</strong><span><Hydrated text={d.worstCase} rb={rb} /></span></p>
+          <strong>{t.worst}</strong>
+          <span><Hydrated text={d.worstCase} rb={rb} /></span>
         </div>
       )}
       {d.checks?.length > 0 && (
@@ -413,7 +396,7 @@ function ReceiptLine({ r, t, compact = false }: { r: Receipt; t: Strings; compac
   return (
     <aside className={`receipt ${local ? 'is-local' : 'is-cloud'}`} aria-label={t.receipt}>
       <div className="receipt-head">
-        <p className="receipt-title"><IconReceipt size={18} /> {t.receipt}</p>
+        <p className="receipt-title">{t.receipt}</p>
         <span className="receipt-badge">{local ? <IconChip size={14} /> : <IconCloud size={14} />}{local ? t.onDevice : t.inCloud}</span>
       </div>
       <dl className="receipt-grid">
