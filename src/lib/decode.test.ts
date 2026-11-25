@@ -57,3 +57,11 @@ describe('privacy boundary', () => {
     expect(rb.level).toBe('caution');
   });
 });
+
+describe('amounts', () => {
+  it('does not show dust as 0.0000', () => {
+    const rb = run('seaport-zero');
+    expect(rb.facts.join(' ')).not.toContain('0.0000');
+    expect(rb.facts.join(' ')).toContain('less than 0.0001');
+  });
+});

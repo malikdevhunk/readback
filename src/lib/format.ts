@@ -44,7 +44,7 @@ export function amountText(v: bigint | null, decimals?: number, symbol?: string)
   if (decimals === undefined) return `${v.toLocaleString('en-US')} base units${symbol ? ' of ' + symbol : ''}`;
   const base = 10n ** BigInt(decimals);
   const whole = v / base;
-  const frac = (v % base).toString().padStart(decimals, '0').replace(/0+$/, '').slice(0, 4);
+  const frac = (v % base).toString().padStart(decimals, '0').slice(0, 4).replace(/0+$/, '');
   if (v > 0n && whole === 0n && !frac) return `less than 0.0001${symbol ? '\u00a0' + symbol : ''}`;
   return `${whole.toLocaleString('en-US')}${frac ? '.' + frac : ''}${symbol ? '\u00a0' + symbol : ''}`;
 }

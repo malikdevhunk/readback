@@ -211,7 +211,14 @@ export async function run<T>(kind: 'explain' | 'ask', prompt: string, lang: stri
     try { await m.initializeDeviceModel(onProgress); } catch { /* the SDK falls back when the mode allows it */ }
   }
   const t0 = performance.now();
-  const res = await m.generateContent(prompt);
+  let res;
+  try { res = await m.generateContent(prompt); }
+  catch (e) {
+    // One quiet retry for transient backend errors (500/503).
+    if (!/\b(500|503|unavailable|overloaded)\b/i.test(String((e as Error)?.message ?? e))) throw e;
+    await new Promise((r) => setTimeout(r, 1200));
+    res = await m.generateContent(prompt);
+  }
   const ms = Math.round(performance.now() - t0);
   const source = (res.response.inferenceSource ?? (r.mode === InferenceMode.ONLY_ON_DEVICE ? 'on_device' : 'in_cloud')) as Receipt['source'];
   const data = parseJson<T>(res.response.text());
