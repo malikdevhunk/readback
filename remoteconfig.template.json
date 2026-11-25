@@ -1,0 +1,8 @@
+{
+  "parameters": {
+    "max_on_device_chars": { "defaultValue": { "value": "6000" }, "description": "Prompts longer than this go to the cloud model first (PREFER_IN_CLOUD).", "valueType": "NUMBER" },
+    "on_device_languages": { "defaultValue": { "value": "en,es,ja" }, "description": "Output languages Gemini Nano in Chrome can write. Others route to the redacted cloud model.", "valueType": "STRING" },
+    "allow_cloud_fallback": { "defaultValue": { "value": "true" }, "description": "Kill switch: false forces ONLY_ON_DEVICE for everyone.", "valueType": "BOOLEAN" },
+    "cloud_model": { "defaultValue": { "value": "gemini-3.5-flash-lite" }, "description": "Cloud fallback model for Firebase AI Logic.", "valueType": "STRING" }
+  }
+}

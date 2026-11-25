@@ -1,0 +1,3 @@
+User-agent: *
+Allow: /
+Sitemap: https://malikdevhunk.github.io/readback/sitemap.xml

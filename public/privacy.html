@@ -1,0 +1,21 @@
+<!doctype html>
+<html lang="en"><head><meta charset="UTF-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Privacy | Readback</title><meta name="description" content="What Readback does with the signature requests you paste: decoded on your device, explained on-device by Gemini Nano, and redacted before any cloud fallback." />
+<link rel="canonical" href="https://malikdevhunk.github.io/readback/privacy.html" />
+<link rel="icon" href="favicon.svg" type="image/svg+xml" /><meta name="theme-color" content="#eef1f3" />
+<style>*{box-sizing:border-box}html{-webkit-font-smoothing:antialiased;color-scheme:light}body{margin:0;font:400 16px/1.6 "IBM Plex Sans",system-ui,sans-serif;color:#15202b;background:#eef1f3}main{max-width:680px;margin:0 auto;padding:48px 24px 64px}a{color:#1d4ed8;text-underline-offset:3px}a:focus-visible{outline:2px solid #1d4ed8;outline-offset:2px;border-radius:6px}h1{font-size:36px;line-height:1.15;letter-spacing:-.02em;margin:32px 0 16px;text-wrap:balance}h2{font-size:20px;margin:32px 0 8px}p,li{color:#3d4955;text-wrap:pretty}.brand{display:inline-flex;gap:8px;align-items:center;font-weight:600;font-size:20px;color:#15202b;text-decoration:none;min-height:44px}</style></head>
+<body><main>
+<a class="brand" href="./"><img src="favicon.svg" width="28" height="28" alt="" />Readback</a>
+<h1>Privacy</h1>
+<p>Last updated 26 November 2026.</p>
+<h2>What stays on your device</h2>
+<p>The request you paste is decoded in your browser. The verdict and findings come from rules that run locally. Readback has no accounts, no analytics and no database, and it never asks you to connect a wallet.</p>
+<h2>When AI is used</h2>
+<p>Readback asks Gemini to explain the decoded facts through Firebase AI Logic. In Chrome on desktop with Gemini Nano, the model runs on your device and nothing is sent anywhere.</p>
+<p>If the on-device model is not available, the request is long, or you choose a language Gemini Nano can’t write yet, Readback can use Google’s cloud-hosted Gemini model instead. Before that happens, every address and long hex value is replaced with a placeholder such as [SPENDER]. Below each answer you can open exactly what was sent. You can turn cloud fallback off.</p>
+<p>Cloud requests are handled by Google under the <a href="https://firebase.google.com/terms">Firebase terms</a> and <a href="https://policies.google.com/privacy">Google’s privacy policy</a>. Firebase App Check uses reCAPTCHA to confirm requests come from this app.</p>
+<h2>Stored in your browser</h2>
+<p>Only two preferences: your explanation language and whether cloud fallback is on. Clear your site data to remove them.</p>
+<h2>Contact</h2>
+<p>Questions: <a href="https://saddammalik.com">saddammalik.com</a>. Source code: <a href="https://github.com/malikdevhunk/readback">github.com/malikdevhunk/readback</a>.</p>
+</main></body></html>
