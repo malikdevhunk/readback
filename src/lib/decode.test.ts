@@ -3,6 +3,7 @@ import { decode, DecodeError } from './decode';
 import { SAMPLES } from './samples';
 import { redactText } from './redact';
 import { explainPrompt } from './ai';
+import { STRINGS } from './i18n';
 
 const get = (id: string) => SAMPLES.find((s) => s.id === id)!;
 const run = (id: string) => decode(get(id).body(), { site: get(id).site });
@@ -63,5 +64,26 @@ describe('amounts', () => {
     const rb = run('seaport-zero');
     expect(rb.facts.join(' ')).not.toContain('0.0000');
     expect(rb.facts.join(' ')).toContain('less than 0.0001');
+  });
+});
+
+describe('interface languages', () => {
+  const flat = (o: unknown, p = ''): string[] => Object.entries(o as Record<string, unknown>).flatMap(([k, v]) => (v && typeof v === 'object' ? flat(v, p + k + '.') : [p + k]));
+  it('every language defines every label', () => {
+    const want = flat(STRINGS.en).sort();
+    for (const l of ['hi', 'es', 'ja']) expect(flat(STRINGS[l]).sort()).toEqual(want);
+  });
+  it('Hindi labels are not English', () => {
+    for (const k of ['plain', 'worst', 'checks', 'ask', 'receipt', 'explainBtn', 'fields'] as const) {
+      expect(STRINGS.hi[k]).not.toBe(STRINGS.en[k]);
+      expect(STRINGS.hi[k]).toMatch(/[\u0900-\u097F]/);
+    }
+    expect(STRINGS.hi.cloudNote(4)).toMatch(/[\u0900-\u097F]/);
+  });
+  it('asks for natural Hindi in the prompt and keeps verdict wording', () => {
+    const p = explainPrompt(run('permit2-claim'), 'hi');
+    expect(p).toContain('Write in Hindi');
+    expect(p).toContain('PhonePe');
+    expect(p).toContain('VERDICT: Do not sign');
   });
 });

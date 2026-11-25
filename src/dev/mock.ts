@@ -30,6 +30,6 @@ export async function mockExplain(rb: Readback, lang: string, where: string) {
       worstCase: '[SPENDER] moves all your USDC out of [YOUR_WALLET] minutes after you sign.',
       checks: ['Did you start a swap on a site you typed yourself?', 'Is [SPENDER] the router of that site? Look it up on a block explorer.', 'If you already signed, revoke the Permit2 allowance.'],
     },
-    receipt: { source: where === 'device' ? 'on_device' as const : 'in_cloud' as const, mode: InferenceMode.PREFER_ON_DEVICE, reason, ms: where === 'device' ? 1840 : 2310, sent: prompt, model: where === 'device' ? 'Gemini Nano (Chrome)' : 'gemini-3.5-flash-lite' },
+    receipt: { source: where === 'device' ? 'on_device' as const : 'in_cloud' as const, mode: InferenceMode.PREFER_ON_DEVICE, reason, reasonKey: 'blocked' in r ? 'cloudOff' as const : r.key, reasonVars: 'blocked' in r ? undefined : r.vars, ms: where === 'device' ? 1840 : 2310, sent: prompt, model: where === 'device' ? 'Gemini Nano (Chrome)' : 'gemini-3.5-flash-lite' },
   };
 }
