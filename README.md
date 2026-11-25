@@ -7,7 +7,7 @@ Paste the request your wallet is showing you: EIP-712 typed data, a transaction,
 Live demo: https://malikdevhunk.github.io/readback/
 
 ![Readback flags an unlimited Permit2 allowance to an unknown spender](docs/permit2-result.png)
-<sub>Explanation text in this screenshot is a fixed sample used for layout review.</sub>
+<sub>Real output from Firebase AI Logic (cloud path, redacted prompt).</sub>
 
 ## Why this exists
 

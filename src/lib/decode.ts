@@ -57,7 +57,7 @@ class Entities {
   /** How the model sees an address: public contract names are fine, private ones are placeholders. */
   ref(addr: string, role: string): string {
     const e = this.get(addr, role);
-    return e.label ? `${e.label} ${e.placeholder}` : e.placeholder;
+    return e.label ?? e.placeholder; // public contract names are safe to share; private addresses stay placeholders
   }
 }
 
@@ -176,6 +176,7 @@ function typedData(td: TypedData, opts: { site?: string; now?: number }, ownerHi
     amountFlags(value, 'message.value', flags);
     deadlineFlags(deadline, 'message.deadline', 'use this signature', flags);
     facts.push(`Type: EIP-2612 permit. It gives ${ents.ref(spender, 'SPENDER')} an allowance of ${amountText(value, decimals, symbol)} of ${symbol ?? 'the token ' + ents.ref(token, 'TOKEN')}, owned by [YOUR_WALLET].`);
+    facts.push('SCOPE: this allowance covers only this one token. It gives no access to ETH or to any other token or NFT.');
     facts.push(`Signature valid until: ${deadline.text}. No transaction or gas is needed for the spender to use it; they submit it themselves.`);
     fields.push({ label: 'Spender', value: spender, mono: true }, { label: 'Amount', value: amountText(value, decimals, symbol) }, { label: 'Deadline', value: deadline.text });
   } else if (isPermit2 && (pt === 'PermitSingle' || pt === 'PermitBatch')) {
@@ -200,6 +201,7 @@ function typedData(td: TypedData, opts: { site?: string; now?: number }, ownerHi
     const firstExp = whenFromSeconds(toBig(details[0]?.expiration), now);
     sentence.push(...untilSegs(firstExp, ' from your wallet through Permit2, until '));
     facts.unshift(`Type: Uniswap Permit2 ${pt}. It sets an allowance inside Permit2 so ${ents.ref(spender, 'SPENDER')} can move tokens from [YOUR_WALLET] at any time until it expires, with no further prompt.`);
+    facts.push('SCOPE: only the tokens listed above. No access to ETH or to any other token or NFT.');
     facts.push(`This signature must be submitted before ${sig.text}.`);
     fields.push({ label: 'Spender', value: spender, mono: true });
   } else if (isPermit2 && (pt === 'PermitTransferFrom' || pt === 'PermitBatchTransferFrom' || pt === 'PermitWitnessTransferFrom')) {
@@ -222,6 +224,7 @@ function typedData(td: TypedData, opts: { site?: string; now?: number }, ownerHi
     const known = lookup(spender);
     flags.push({ severity: known ? 'caution' : 'critical', title: 'This signature moves tokens directly', detail: known ? `Signing lets ${known.name} transfer the tokens. Only sign if you are doing a swap or payment there right now.` : 'An unknown address can transfer the tokens out of your wallet as soon as you sign. No transaction confirmation follows.', evidence: `primaryType ${pt}` });
     if (!known) flags.push({ severity: 'high', title: 'Spender is not a known contract', detail: 'Readback does not recognise this address. Drainer kits use fresh addresses.', evidence: `message.spender = ${short(spender)}` });
+    facts.push('SCOPE: only the listed tokens and amounts, one time. No access to ETH or anything not listed.');
     facts.unshift(`Type: Permit2 SignatureTransfer (${pt}). ${ents.ref(spender, 'SPENDER')} can transfer the listed tokens out of [YOUR_WALLET] once, before ${dl.text}.`);
     fields.push({ label: 'Spender', value: spender, mono: true }, { label: 'Deadline', value: dl.text });
   } else if (pt === 'OrderComponents' && Array.isArray(m.offer) && Array.isArray(m.consideration)) {
@@ -275,6 +278,7 @@ function seaport(m: Record<string, unknown>, ents: Entities, flags: Flag[], fact
 
   facts.push(`Type: Seaport order signed by [YOUR_WALLET]. You give: ${gives.join(', ')}. You receive: ${toYou.length ? toYou.map(describe).join(' + ') : 'nothing'}.`);
   toOthers.forEach((c) => facts.push(`Also paid out: ${describe(c)} to ${ents.ref(String(c.recipient), 'RECIPIENT')}.`));
+  facts.push('SCOPE: only the items listed in the offer. Other NFTs, tokens and ETH in the wallet are not part of this order.');
   facts.push(`Order can be filled by anyone until ${end.text}.`);
   fields.push({ label: 'Offer', value: gives.join(', ') }, { label: 'You receive', value: toYou.length ? toYou.map(describe).join(' + ') : 'nothing' }, { label: 'Ends', value: end.text });
 }
@@ -385,6 +389,7 @@ function transaction(o: Record<string, unknown>, opts: { site?: string; now?: nu
       sentence = [{ text: 'You let ' }, addrSeg(spender), { text: ' spend ' }, { text: amountText(amt, decimals, symbol ?? tok), tone: isUnlimited(amt) ? 'danger' : undefined }, { text: ' from your wallet, with no end date.' }];
       spenderFlags(spender, flags);
       amountFlags(amt, 'calldata word 2 (amount)', flags);
+      facts.push('SCOPE: this approval covers only this one token contract, up to the amount. It gives no access to ETH or to other tokens or NFTs.');
       facts.push(`ERC-20 approval: ${ents.ref(spender, 'SPENDER')} may spend ${amountText(amt, decimals, symbol)} of ${tok} from [YOUR_WALLET]. ERC-20 approvals do not expire until revoked.`);
     }
     fields.push({ label: 'Spender', value: spender, mono: true }, { label: 'Amount', value: amountText(amt, decimals, symbol) });
@@ -396,6 +401,7 @@ function transaction(o: Record<string, unknown>, opts: { site?: string; now?: nu
       sentence = [{ text: 'You let ' }, addrSeg(operator), { text: ' move ' }, { text: 'every NFT you own', tone: 'danger' }, { text: ' in ' }, target, { text: ', now and in the future, until you revoke it.' }];
       const k = lookup(operator);
       flags.push({ severity: k ? 'caution' : 'critical', title: 'Access to the whole collection', detail: k ? `${k.name} is a known marketplace contract. Only approve if you are listing on it right now.` : 'An unknown operator gets every NFT you hold in this collection. This is how most NFT drains happen.', evidence: 'setApprovalForAll(operator, true)' });
+      facts.push('SCOPE: every NFT in this one collection only. Other collections, tokens and ETH are not covered.');
       facts.push(`setApprovalForAll: ${ents.ref(operator, 'OPERATOR')} gets permission to transfer every NFT [YOUR_WALLET] holds in ${to ? ents.ref(to, 'COLLECTION') : 'this collection'}, with no expiry.`);
     } else {
       sentence = [{ text: 'You remove ' }, addrSeg(operator), { text: '’s access to your NFTs in ' }, target, { text: '.' }];
