@@ -216,7 +216,7 @@ select { width: auto; padding: var(--s2) var(--s6) var(--s2) var(--s3); min-heig
   .shell { padding: 0 var(--s4); }
   .top { padding: var(--s4) 0 var(--s2); flex-direction: column; align-items: flex-start; gap: 0; }
   .status { justify-content: flex-start; }
-  textarea.code { min-height: 168px; }
+  textarea.code { min-height: 0; height: 176px; }
   .status-item { font-size: var(--t-label); }
   .sheet { padding: var(--s5) var(--s4); border-radius: var(--r-md); margin: 0 calc(var(--s2) * -1); }
   .sample { flex-direction: column; gap: 0; }
